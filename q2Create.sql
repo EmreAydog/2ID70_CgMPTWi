@@ -21,5 +21,14 @@ SELECT ECTSInDegree.StudentRegistrationId, ECTSInDegree.DegreeId
 FROM ECTSInDegree, Degrees
 WHERE ECTSInDegree.DegreeId = Degrees.DegreeId
 AND ECTSInDegree.CurrentECTS >= Degrees.TotalECTS;
+-- Materialized view for GPA
+CREATE MATERIALIZED VIEW MaterialGPA AS
+SELECT StudentRegistrationsToDegrees.StudentId, CAST(SUM(CourseRegistrations.Grade * Courses.ECTS) AS FLOAT) / CAST(SUM(Courses.ECTS) AS FLOAT) as GPA
+FROM StudentRegistrationsToDegrees, CourseRegistrations, CourseOffers, Courses
+WHERE StudentRegistrationsToDegrees.StudentRegistrationId = CourseRegistrations.StudentRegistrationId
+AND CourseRegistrations.CourseOfferId = CourseOffers.CourseOfferId
+AND CourseOffers.CourseId = Courses.CourseId
+AND CourseRegistrations.Grade >= 5
+GROUP BY StudentRegistrationsToDegrees.StudentId;
 -- Analyze
 ANALYZE VERBOSE;
